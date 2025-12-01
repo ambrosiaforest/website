@@ -2,4 +2,4 @@ Hey! Welcome to the source for my website. There's not much on here but it's min
 
 You can build my website by running `./ssg` in the main directory
 
-Evertyhing on this site is public domain. For more information see [license.html](/license.html)
+The static site generator is licensed under GPLv3 and the content is licensed under CC BY-ND
