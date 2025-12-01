@@ -1,0 +1,37 @@
+#!/bin/sh
+
+src=src
+dst=dst
+header="_header.xhtml"
+footer="_footer.xhtml"
+nl='
+'
+
+[ -d "$dst" ] && rm -f "$dst"/* || mkdir -p "$dst"
+
+for f in $(find "$src" -type f | sort -r); do
+    g=$(basename "$f")
+
+    case "$g" in
+        _*) ;;
+        *.md)
+            year=${g%%-*}
+            month=${g#*-}
+            month=${month%%-*}
+            day=${g#*-}
+            day=${day#*-}
+            day=${day%%-*}
+            title=${g##*-}
+            cat "$src/$header" > "$dst/${title%.*}.xhtml"
+            lowdown "$f" >> "$dst/${title%.*}.xhtml"
+            sed "s/.onion/.onion\/${title%.*}.xhtml/" "$src/$footer" >> "$dst/${title%.*}.xhtml"
+            sed -i "s/<!--blogs-->/&\\${nl}<li><a href=\"${title%.*}.xhtml\">${title%.*}.xhtml<\/a> - ${month}\/${day}\/${year}<\/li>/" "$dst"/index.xhtml
+            ;;
+        *.xhtml)
+            cat "$src/$header" "$f" "$src/$footer" > "$dst/$g"
+            ;;
+        *)
+            cp "$f" "$dst/$g"
+            ;;
+    esac
+done

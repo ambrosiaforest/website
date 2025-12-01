@@ -1,0 +1,102 @@
+* {
+    font-family: undefined;
+    }
+
+@font-face {
+    font-display: swap;
+    font-family: undefined;
+    src: url("undefined-medium.woff2");
+}
+
+html, body {
+    background: url("bg.gif") no-repeat center fixed;
+    image-rendering: pixelated;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+	flex-direction: column;
+	height: 100%
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #BD93F9;
+}
+
+h3 {
+    color: #BD93F9;
+}
+
+p, ul {
+    color: #F8F8F2;
+}
+
+a {
+    color: #FF79C6;
+    text-decoration: none;
+}
+
+img {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#quote {
+    margin-left: 2em;
+    color: #FF79C6;
+}
+
+.footer {
+	flex-shrink: 0;
+	text-align: center;
+}
+
+.box {
+    margin-top: 0;
+    margin-bottom: 20px;
+    margin-left: 20%;
+    margin-right: 20%;
+    border-style: solid;
+    border-width: 3px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background: #000000da;
+    border-color: #BD93F9;
+}
+
+.center {
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.content {
+	flex: 1 0 auto;
+}
+
+.title {
+    margin-top: 50px;
+}
+
+.back {
+	color: #BD93F9;
+}
+
+.group {
+  white-space: nowrap;
+  overflow: auto;
+}
+
+@media only screen and (max-width: 900px) {
+    .box {
+        margin-left: 5%;
+        margin-right: 5%;
+    }
+}

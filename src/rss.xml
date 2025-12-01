@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+
+<channel>
+    <title>Catgirl Forest</title>
+    <link>https://catgirlforest.com</link>
+    <description>My personal website</description>
+    <item>
+        <title>Welcome to my blog</title>
+        <link>https://catgirlforest.com/welcome.xhtml</link>
+        <pubDate>Fri, 05 July 2024 00:00:00 UTC</pubDate>
+        <description>
+            <pre>
+            This is my very first blog post. It's not much but it's mine :3 I have decided to make a small static site generator in shell to simplify making my website and the blogs i want to share on it. If you're interested you can find the script and source for this site on [my git repo](/git/website.git)
+            </pre>
+        </description>
+    </item>
+</channel>
+
+</rss>
