@@ -2,9 +2,30 @@ use glob::glob;
 use std::path::{Path, PathBuf};
 use std::fs::File;
 use std::io::{self, Read, Write, Error};
+use markdown::to_html;
 
 fn create_md(filename: &str) -> Result<(), Error> {
-    todo!();
+    let input_dir = PathBuf::from("src");
+    let output_dir = PathBuf::from("dst");
+
+    let header = "_header.xhtml";
+    let footer = "_footer.xhtml";
+    let output_path = output_dir.join(format!("{}.xhtml", filename));
+
+    std::fs::create_dir_all(output_dir)?;
+
+    let mut output = File::create(&output_path)?;
+
+    let header_path = input_dir.join(header);
+    let footer_path = input_dir.join(footer);
+
+    for file in &[header_path, to_html(, footer] {
+        let input_path = input_dir.join(file);
+        let mut input = File::open(&input_path)?;
+        io::copy(&mut input, &mut output)?;
+    }
+
+    Ok(())
 }
 
 fn create_file(filename: &str, extension: &str) -> Result<(), Error> {
