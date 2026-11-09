@@ -19,7 +19,7 @@ fn create_md(filename: &str) -> Result<(), Error> {
     let header_path = input_dir.join(header);
     let footer_path = input_dir.join(footer);
 
-    for file in &[header_path, to_html(, footer] {
+    for file in &[header, format!("{}.md", filename).as_str(), footer] {
         let input_path = input_dir.join(file);
         let mut input = File::open(&input_path)?;
         io::copy(&mut input, &mut output)?;
