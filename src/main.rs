@@ -1,8 +1,7 @@
 use glob::glob;
 use pulldown_cmark::{Options, Parser, html};
 use std::fs;
-use std::fs::File;
-use std::io::{self, Error};
+use std::io::Error;
 use std::path::{Path, PathBuf};
 
 fn split_post(stem: &str) -> Option<((u32, u32, u32), &str)> {
@@ -15,7 +14,7 @@ fn split_post(stem: &str) -> Option<((u32, u32, u32), &str)> {
 }
 
 fn insert_blog() -> Result<(), Error> {
-    let input_dir = PathBuf::from("src");
+    let input_dir = PathBuf::from("www");
     let index_path = PathBuf::from("dst").join("index.xhtml");
 
     let mut posts = Vec::new();
@@ -36,7 +35,7 @@ fn insert_blog() -> Result<(), Error> {
     let mut list = String::new();
     for((y, m, d), stem, title) in &posts {
         list.push_str(&format!(
-                "   <li>{y}-{m:02}-{d:02} <a href=\"{stem}.xhtml\">{title}</a></li>\n"
+                "<li>{y}-{m:02}-{d:02} <a href=\"{stem}.xhtml\">{title}</a></li>\n"
         ));
     }
 
@@ -48,7 +47,7 @@ fn insert_blog() -> Result<(), Error> {
 }
 
 fn create_md(filename: &str) -> Result<(), Error> {
-    let input_dir = PathBuf::from("src");
+    let input_dir = PathBuf::from("www");
     let output_dir = PathBuf::from("dst");
 
     std::fs::create_dir_all(&output_dir)?;
@@ -71,40 +70,32 @@ fn create_md(filename: &str) -> Result<(), Error> {
 }
 
 fn create_file(filename: &str, extension: &str) -> Result<(), Error> {
-    let input_dir = PathBuf::from("src");
+    let input_dir = PathBuf::from("www");
     let output_dir = PathBuf::from("dst");
 
-    let output_path = output_dir.join(format!("{}.{}", filename, extension));
+    std::fs::create_dir_all(&output_dir)?;
 
-    std::fs::create_dir_all(output_dir)?;
+    let input_path = input_dir.join(format!("{filename}.{extension}"));
+    let output_path = output_dir.join(format!("{filename}.{extension}"));
 
-    let mut output = File::create(&output_path)?;
-
-    let file = format!("{}.{}", filename, extension);
-    let input_path = input_dir.join(file);
-    let mut input = File::open(&input_path)?;
-    io::copy(&mut input, &mut output)?;
+    fs::copy(input_path, output_path)?;
 
     Ok(())
 }
 
 fn create_xhtml(filename: &str) -> Result<(), Error> {
-    let input_dir = PathBuf::from("src");
+    let input_dir = PathBuf::from("www");
     let output_dir = PathBuf::from("dst");
 
-    let header = "_header.xhtml";
-    let footer = "_footer.xhtml";
+    std::fs::create_dir_all(&output_dir)?;
+
+    let header = fs::read_to_string(input_dir.join("_header.xhtml"))?;
+    let footer = fs::read_to_string(input_dir.join("_footer.xhtml"))?;
+    let body = fs::read_to_string(input_dir.join(format!("{filename}.xhtml")))?;
+
     let output_path = output_dir.join(format!("{}.xhtml", filename));
 
-    std::fs::create_dir_all(output_dir)?;
-
-    let mut output = File::create(&output_path)?;
-
-    for file in &[header, format!("{}.xhtml", filename).as_str(), footer] {
-        let input_path = input_dir.join(file);
-        let mut input = File::open(&input_path)?;
-        io::copy(&mut input, &mut output)?;
-    }
+    fs::write(&output_path, format!("{header}{body}{footer}"))?;
 
     Ok(())
 }
@@ -126,7 +117,7 @@ fn split_file(path: &Path) -> Option<(&str, &str)> {
 }
 
 fn main() {
-    for entry in glob("src/*").expect("Failed to read glob pattern") {
+    for entry in glob("www/*").expect("Failed to read glob pattern") {
         match entry {
             Ok(path) => {
                 if let Some((filename, extension)) = split_file(&path) {
