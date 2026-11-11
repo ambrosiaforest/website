@@ -5,6 +5,48 @@ use std::fs::File;
 use std::io::{self, Error};
 use std::path::{Path, PathBuf};
 
+fn split_post(stem: &str) -> Option<((u32, u32, u32), &str)> {
+    let mut parts = stem.splitn(4, '-');
+    let y = parts.next()?.parse().ok()?;
+    let m = parts.next()?.parse().ok()?;
+    let d = parts.next()?.parse().ok()?;
+    let title = parts.next()?;
+    Some(((y, m, d), title))
+}
+
+fn insert_blog() -> Result<(), Error> {
+    let input_dir = PathBuf::from("src");
+    let index_path = PathBuf::from("dst").join("index.xhtml");
+
+    let mut posts = Vec::new();
+    for entry in fs::read_dir(&input_dir)? {
+        let path = entry?.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("md") {
+            continue;
+        }
+
+        let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else { continue };
+        if let Some((date, title)) = split_post(stem) {
+            posts.push((date, stem.to_string(), title.replace('-', " ")));
+        }
+    }
+
+    posts.sort_by(|a, b| b.0.cmp(&a.0));
+
+    let mut list = String::new();
+    for((y, m, d), stem, title) in &posts {
+        list.push_str(&format!(
+                "   <li>{y}-{m:02}-{d:02} <a href=\"{stem}.xhtml\">{title}</a></li>\n"
+        ));
+    }
+
+    let index = fs::read_to_string(&index_path)?;
+    fs::write(&index_path, index.replace("<!--blogs-->", &list))?;
+
+    Ok(())
+
+}
+
 fn create_md(filename: &str) -> Result<(), Error> {
     let input_dir = PathBuf::from("src");
     let output_dir = PathBuf::from("dst");
@@ -93,5 +135,9 @@ fn main() {
             }
             Err(e) => println!("{:?}", e),
         }
+    }
+
+    if let Err(e) = insert_blog() {
+        eprintln!("insert_blog falied: {e}");
     }
 }
