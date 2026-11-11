@@ -1,29 +1,30 @@
 use glob::glob;
-use std::path::{Path, PathBuf};
+use pulldown_cmark::{Options, Parser, html};
+use std::fs;
 use std::fs::File;
-use std::io::{self, Read, Write, Error};
-use markdown::to_html;
+use std::io::{self, Error, Read, Write};
+use std::path::{Path, PathBuf};
 
 fn create_md(filename: &str) -> Result<(), Error> {
     let input_dir = PathBuf::from("src");
     let output_dir = PathBuf::from("dst");
 
-    let header = "_header.xhtml";
-    let footer = "_footer.xhtml";
+    std::fs::create_dir_all(&output_dir)?;
+
+    let header = fs::read_to_string(input_dir.join("_header.xhtml"))?;
+    let footer = fs::read_to_string(input_dir.join("_footer.xhtml"))?;
+    let markdown = fs::read_to_string(input_dir.join(format!("{}.md", filename)))?;
+
+    let options = Options::empty();
+
+    //let mut options = Options::empty();
+    let parser = Parser::new_ext(&markdown, options);
+
+    let mut body = String::new();
+    html::push_html(&mut body, parser);
+
     let output_path = output_dir.join(format!("{}.xhtml", filename));
-
-    std::fs::create_dir_all(output_dir)?;
-
-    let mut output = File::create(&output_path)?;
-
-    let header_path = input_dir.join(header);
-    let footer_path = input_dir.join(footer);
-
-    for file in &[header, format!("{}.md", filename).as_str(), footer] {
-        let input_path = input_dir.join(file);
-        let mut input = File::open(&input_path)?;
-        io::copy(&mut input, &mut output)?;
-    }
+    fs::write(&output_path, format!("{header}{body}{footer}"))?;
 
     Ok(())
 }
@@ -72,7 +73,7 @@ fn sort_file(filename: &str, extension: &str) {
         "xhtml" => create_xhtml(filename),
         "md" => create_md(filename),
         "rs" => Ok(()),
-        _ => create_file(filename, extension)
+        _ => create_file(filename, extension),
     };
 }
 
@@ -90,7 +91,7 @@ fn main() {
                 if let Some((filename, extension)) = split_file(&path) {
                     sort_file(filename, extension);
                 }
-            },
+            }
             Err(e) => println!("{:?}", e),
         }
     }
