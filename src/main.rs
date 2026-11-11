@@ -24,7 +24,9 @@ fn insert_blog() -> Result<(), Error> {
             continue;
         }
 
-        let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else { continue };
+        let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
+            continue;
+        };
         if let Some((date, title)) = split_post(stem) {
             posts.push((date, stem.to_string(), title.replace('-', " ")));
         }
@@ -33,9 +35,9 @@ fn insert_blog() -> Result<(), Error> {
     posts.sort_by(|a, b| b.0.cmp(&a.0));
 
     let mut list = String::new();
-    for((y, m, d), stem, title) in &posts {
+    for ((y, m, d), stem, title) in &posts {
         list.push_str(&format!(
-                "<li>{y}-{m:02}-{d:02} <a href=\"{stem}.xhtml\">{title}</a></li>\n"
+            "<li>{y}-{m:02}-{d:02} <a href=\"{stem}.xhtml\">{title}</a></li>\n"
         ));
     }
 
@@ -43,7 +45,6 @@ fn insert_blog() -> Result<(), Error> {
     fs::write(&index_path, index.replace("<!--blogs-->", &list))?;
 
     Ok(())
-
 }
 
 fn create_md(filename: &str) -> Result<(), Error> {
@@ -100,13 +101,12 @@ fn create_xhtml(filename: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn sort_file(filename: &str, extension: &str) {
+fn sort_file(filename: &str, extension: &str) -> Result<(), Error> {
     match extension {
         "xhtml" => create_xhtml(filename),
         "md" => create_md(filename),
-        "rs" => Ok(()),
         _ => create_file(filename, extension),
-    };
+    }
 }
 
 fn split_file(path: &Path) -> Option<(&str, &str)> {
@@ -121,7 +121,9 @@ fn main() {
         match entry {
             Ok(path) => {
                 if let Some((filename, extension)) = split_file(&path) {
-                    sort_file(filename, extension);
+                    if let Err(e) = sort_file(filename, extension) {
+                        eprintln!("Failde to process {filename}.{extension}: {e}");
+                    };
                 }
             }
             Err(e) => println!("{:?}", e),
