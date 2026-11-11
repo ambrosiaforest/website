@@ -2,7 +2,7 @@ use glob::glob;
 use pulldown_cmark::{Options, Parser, html};
 use std::fs;
 use std::fs::File;
-use std::io::{self, Error, Read, Write};
+use std::io::{self, Error};
 use std::path::{Path, PathBuf};
 
 fn create_md(filename: &str) -> Result<(), Error> {
@@ -17,7 +17,6 @@ fn create_md(filename: &str) -> Result<(), Error> {
 
     let options = Options::empty();
 
-    //let mut options = Options::empty();
     let parser = Parser::new_ext(&markdown, options);
 
     let mut body = String::new();
