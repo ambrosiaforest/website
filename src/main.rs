@@ -126,12 +126,12 @@ fn main() {
         _ => (args[1].as_str(), args[2].as_str()),
     };
 
-    for entry in glob(format!("{input}/*").as_str()).expect("Failed to read glob pattern") {
+    for entry in glob(format!("{input}/*").as_str()).expect("failed to read glob pattern") {
         match entry {
             Ok(path) => {
                 if let Some((filename, extension)) = split_file(&path) {
                     if let Err(e) = sort_file(filename, extension, input, output) {
-                        eprintln!("Failde to process {filename}.{extension}: {e}");
+                        eprintln!("failed to process {filename}.{extension}: {e}");
                     };
                 }
             }
