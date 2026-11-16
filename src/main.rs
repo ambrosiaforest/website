@@ -140,6 +140,6 @@ fn main() {
     }
 
     if let Err(e) = insert_blog(input, output) {
-        eprintln!("insert_blog falied: {e}");
+        eprintln!("insert_blog failed: {e}");
     }
 }
