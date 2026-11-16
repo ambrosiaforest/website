@@ -1,5 +1,6 @@
 use glob::glob;
 use pulldown_cmark::{Options, Parser, html};
+use std::env;
 use std::fs;
 use std::io::Error;
 use std::path::{Path, PathBuf};
@@ -13,9 +14,9 @@ fn split_post(stem: &str) -> Option<((u32, u32, u32), &str)> {
     Some(((y, m, d), title))
 }
 
-fn insert_blog() -> Result<(), Error> {
-    let input_dir = PathBuf::from("www");
-    let index_path = PathBuf::from("dst").join("index.xhtml");
+fn insert_blog(input: &str, output: &str) -> Result<(), Error> {
+    let input_dir = PathBuf::from(input);
+    let index_path = PathBuf::from(output).join("index.xhtml");
 
     let mut posts = Vec::new();
     for entry in fs::read_dir(&input_dir)? {
@@ -47,15 +48,15 @@ fn insert_blog() -> Result<(), Error> {
     Ok(())
 }
 
-fn create_md(filename: &str) -> Result<(), Error> {
-    let input_dir = PathBuf::from("www");
-    let output_dir = PathBuf::from("dst");
+fn create_md(filename: &str, input: &str, output: &str) -> Result<(), Error> {
+    let input_dir = PathBuf::from(input);
+    let output_dir = PathBuf::from(output);
 
     std::fs::create_dir_all(&output_dir)?;
 
     let header = fs::read_to_string(input_dir.join("_header.xhtml"))?;
     let footer = fs::read_to_string(input_dir.join("_footer.xhtml"))?;
-    let markdown = fs::read_to_string(input_dir.join(format!("{}.md", filename)))?;
+    let markdown = fs::read_to_string(input_dir.join(format!("{filename}.md")))?;
 
     let options = Options::empty();
 
@@ -70,9 +71,9 @@ fn create_md(filename: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn create_file(filename: &str, extension: &str) -> Result<(), Error> {
-    let input_dir = PathBuf::from("www");
-    let output_dir = PathBuf::from("dst");
+fn create_file(filename: &str, extension: &str, input: &str, output: &str) -> Result<(), Error> {
+    let input_dir = PathBuf::from(input);
+    let output_dir = PathBuf::from(output);
 
     std::fs::create_dir_all(&output_dir)?;
 
@@ -84,9 +85,9 @@ fn create_file(filename: &str, extension: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn create_xhtml(filename: &str) -> Result<(), Error> {
-    let input_dir = PathBuf::from("www");
-    let output_dir = PathBuf::from("dst");
+fn create_xhtml(filename: &str, input: &str, output: &str) -> Result<(), Error> {
+    let input_dir = PathBuf::from(input);
+    let output_dir = PathBuf::from(output);
 
     std::fs::create_dir_all(&output_dir)?;
 
@@ -94,18 +95,18 @@ fn create_xhtml(filename: &str) -> Result<(), Error> {
     let footer = fs::read_to_string(input_dir.join("_footer.xhtml"))?;
     let body = fs::read_to_string(input_dir.join(format!("{filename}.xhtml")))?;
 
-    let output_path = output_dir.join(format!("{}.xhtml", filename));
+    let output_path = output_dir.join(format!("{filename}.xhtml"));
 
     fs::write(&output_path, format!("{header}{body}{footer}"))?;
 
     Ok(())
 }
 
-fn sort_file(filename: &str, extension: &str) -> Result<(), Error> {
+fn sort_file(filename: &str, extension: &str, input: &str, output: &str) -> Result<(), Error> {
     match extension {
-        "xhtml" => create_xhtml(filename),
-        "md" => create_md(filename),
-        _ => create_file(filename, extension),
+        "xhtml" => create_xhtml(filename, input, output),
+        "md" => create_md(filename, input, output),
+        _ => create_file(filename, extension, input, output),
     }
 }
 
@@ -117,11 +118,19 @@ fn split_file(path: &Path) -> Option<(&str, &str)> {
 }
 
 fn main() {
-    for entry in glob("www/*").expect("Failed to read glob pattern") {
+    let args: Vec<String> = env::args().collect();
+
+    let (input, output) = match args.len() {
+        1 => ("www", "dst"),
+        2 => (args[1].as_str(), "dst"),
+        _ => (args[1].as_str(), args[2].as_str()),
+    };
+
+    for entry in glob(format!("{input}/*").as_str()).expect("Failed to read glob pattern") {
         match entry {
             Ok(path) => {
                 if let Some((filename, extension)) = split_file(&path) {
-                    if let Err(e) = sort_file(filename, extension) {
+                    if let Err(e) = sort_file(filename, extension, input, output) {
                         eprintln!("Failde to process {filename}.{extension}: {e}");
                     };
                 }
@@ -130,7 +139,7 @@ fn main() {
         }
     }
 
-    if let Err(e) = insert_blog() {
+    if let Err(e) = insert_blog(input, output) {
         eprintln!("insert_blog falied: {e}");
     }
 }
