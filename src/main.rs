@@ -65,7 +65,7 @@ fn create_md(filename: &str, input: &str, output: &str) -> Result<(), Error> {
     let mut body = String::new();
     html::push_html(&mut body, parser);
 
-    let output_path = output_dir.join(format!("{}.xhtml", filename));
+    let output_path = output_dir.join(format!("{filename}.xhtml"));
     fs::write(&output_path, format!("{header}{body}{footer}"))?;
 
     Ok(())
